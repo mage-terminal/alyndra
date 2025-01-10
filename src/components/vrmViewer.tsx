@@ -9,11 +9,15 @@ import { ChatContext } from "@/features/chat/chatContext";
 import clsx from "clsx";
 
 
-export default function VrmViewer({chatMode}:{chatMode: boolean}) {
+export default function VrmViewer({
+  chatMode,
+  setIsLoading}:{
+  chatMode: boolean;
+  setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const { chat: bot } = useContext(ChatContext);
   const { viewer } = useContext(ViewerContext);
   const { getCurrentVrm, vrmList, vrmListAddFile, isLoadingVrmList } = useVrmStoreContext();
-  const [isLoading, setIsLoading] = useState(true);
   const [loadingError, setLoadingError] = useState(false);
   const isVrmLocal = 'local' == config("vrm_save_type");
 
@@ -32,7 +36,7 @@ export default function VrmViewer({chatMode}:{chatMode: boolean}) {
           try {
             const currentVrm = getCurrentVrm();
             if (!currentVrm) {
-              setIsLoading(true);
+              setIsLoading?.(true);
               resolve(false);
             } else {
               await viewer.loadVrm(buildUrl(currentVrm.url));
@@ -46,14 +50,19 @@ export default function VrmViewer({chatMode}:{chatMode: boolean}) {
           if (loaded) {
             console.log("vrm loaded");
             setLoadingError(false);
-            setIsLoading(false);
+
+            setTimeout(() => {
+              setIsLoading?.(false);
+            }, 3000);
             if (isTauri()) invoke("close_splashscreen");
           }
         })
         .catch((e) => {
           console.error("vrm loading error", e);
           setLoadingError(true);
-          setIsLoading(false);
+          setTimeout(() => {
+            setIsLoading?.(false);
+          }, 3000);
           if (isTauri()) invoke("close_splashscreen");
         });
 
@@ -95,21 +104,23 @@ export default function VrmViewer({chatMode}:{chatMode: boolean}) {
   );
 
   return (
-    <div className={clsx(
-      "fixed top-0 left-0 w-full h-full z-1",
-      chatMode ? "top-[50%] left-[65%]" : "top-0 left-0",
-    )}>
-      <canvas ref={canvasRef} className={"h-full w-full"}></canvas>
-      {isLoading && (
-        <div className={"absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center"}>
-          <div className={"text-white text-2xl"}>Loading...</div>
+      <>
+        <div style={{zIndex:"-1",position: "absolute",bottom:"0",right:"0",height:"100%",width:"100%"}}>
+          <canvas ref={canvasRef} style={{position:"absolute",bottom:"0",right:"0"}}></canvas>
+          {/*{isLoading && (
+              <div
+                  className={"absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center"}>
+                <div className={"text-white text-2xl"}>Loading...</div>
+              </div>
+          )}
+          {loadingError && (
+              <div
+                  className={"absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center"}>
+                <div className={"text-white text-2xl"}>Error loading VRM model...</div>
+              </div>
+          )}*/}
         </div>
-      )}
-      {loadingError && (
-        <div className={"absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center"}>
-          <div className={"text-white text-2xl"}>Error loading VRM model...</div>
-        </div>
-      )}
-    </div>
+      </>
+
   );
 }

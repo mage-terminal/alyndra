@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useRef } from "react";
 
-export const UserText = ({ message }: { message: string }) => {
+export const UserText = ({ message,marginBottom }: { message: string ,marginBottom:string}) => {
   const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -16,7 +16,7 @@ export const UserText = ({ message }: { message: string }) => {
   });
 
   return (
-    <div className="fixed bottom-0 left-0 mb-20 w-full">
+    <div className="fixed bottom-0 left-0 mb-20 w-full z-10" style={{marginBottom:marginBottom}}>
       <div className="mx-auto max-w-4xl w-full px-4 md:px-16">
         <div className="backdrop-blur-lg rounded-lg">
           <div className="bg-white/70 rounded-lg backdrop-blur-lg shadow-lg">

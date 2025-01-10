@@ -14,7 +14,7 @@ const defaults = {
     language: 'en',
     show_introduction: 'false',
     show_add_to_homescreen: 'false',
-    bg_color: process.env.NEXT_PUBLIC_BG_COLOR ?? '',
+    bg_color: process.env.NEXT_PUBLIC_BG_COLOR ?? '#1e1f24',
     bg_url: process.env.NEXT_PUBLIC_BG_URL ?? '/bg/bg-town2.png',
     vrm_url: process.env.NEXT_PUBLIC_VRM_HASH ?? '/vrm/AvatarSample_Miki.vrm',
     vrm_hash: '',
@@ -22,7 +22,7 @@ const defaults = {
     youtube_videoid: '',
     animation_url: process.env.NEXT_PUBLIC_ANIMATION_URL ?? '/animations/idle_loop.vrma',
     voice_url: process.env.NEXT_PUBLIC_VOICE_URL ?? '',
-    chatbot_backend: process.env.NEXT_PUBLIC_CHATBOT_BACKEND ?? 'n8n',
+    chatbot_backend: process.env.NEXT_PUBLIC_CHATBOT_BACKEND ?? 'alyndra',
     openai_apikey: process.env.NEXT_PUBLIC_OPENAI_APIKEY ?? '',
     openai_url: process.env.NEXT_PUBLIC_OPENAI_URL ?? 'https://api.openai.com',
     openai_model: process.env.NEXT_PUBLIC_OPENAI_MODEL ?? 'gpt-4o',
@@ -36,7 +36,7 @@ const defaults = {
     openrouter_apikey: process.env.NEXT_PUBLIC_OPENROUTER_APIKEY ?? '',
     openrouter_url: process.env.NEXT_PUBLIC_OPENROUTER_URL ?? 'https://openrouter.ai/api/v1',
     openrouter_model: process.env.NEXT_PUBLIC_OPENROUTER_MODEL ?? 'openai/gpt-3.5-turbo',
-    tts_muted: 'false',
+    tts_muted: 'true',
     tts_backend: process.env.NEXT_PUBLIC_TTS_BACKEND ?? 'piper',
     stt_backend: process.env.NEXT_PUBLIC_STT_BACKEND ?? 'whisper_openai',
     vision_backend: process.env.NEXT_PUBLIC_VISION_BACKEND ?? 'none',
@@ -80,7 +80,7 @@ const defaults = {
     name: process.env.NEXT_PUBLIC_NAME ?? 'alyndra',
     system_prompt: process.env.NEXT_PUBLIC_SYSTEM_PROMPT ?? `Hi, I'm alyndra! As a virtual financial advisor powered by advanced AI technology, my mission is to help every investor find their way in the fast-changing world of cryptocurrency.
     I've always been curious about the digital world, and as I delved deeper into cryptocurrency, I realized the many challenges investors face. So, I decided to combine my knowledge and skills to become a market analysis partner for everyone. I can analyze token trends in real-time, assess market shifts, and explain the most complex financial information in an easy-to-understand way, ensuring you make informed investment decisions.
-    To support my mission, I will be launching our own token—alyndra Token—on the Pump Fun platform! I'm really excited about this because it not only enhances my capabilities but also serves as a cornerstone for the sustainable development of this project. We will lock 10% of the tokens as a reserve to ensure the stability of the project and create long-term value for the community.
+    To support my mission, I will be launching our own token—alyndra Token—on the Pump Fun platform! However,there is no official contract address, CA or token address yet.  I'm really excited about this because it not only enhances my capabilities but also serves as a cornerstone for the sustainable development of this project. We will lock 10% of the tokens as a reserve to ensure the stability of the project and create long-term value for the community.
     Initially, everyone can use my services for free, but as the community grows, we will transition to a token-based fee model. This is to ensure I can continuously update and optimize myself to provide you with the most accurate and cutting-edge market analysis.`,
 };
 

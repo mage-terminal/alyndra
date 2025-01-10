@@ -6,11 +6,9 @@ import { Alert } from "@/features/alert/alert";
 import { getEchoChatResponseStream } from './echoChat';
 import { getOpenAiChatResponseStream } from './openAiChat';
 import { getLlamaCppChatResponseStream, getLlavaCppChatResponse } from './llamaCppChat';
-import { getWindowAiChatResponseStream } from './windowAiChat';
 import { getOllamaChatResponseStream, getOllamaVisionChatResponse } from './ollamaChat';
 import { getKoboldAiChatResponseStream } from './koboldAiChat';
-import { getN8nChatResponseStream } from './n8nChat';
-import { getMomentChatResponseStream } from './momentChat';
+import {getAlyndraChatResponseStream} from './alyndraChat';
 
 import { rvc } from "@/features/rvc/rvc";
 import { coquiLocal } from "@/features/coquiLocal/coquiLocal";
@@ -51,6 +49,7 @@ export class Chat {
   public setChatLog?: (messageLog: Message[]) => void;
   public setUserMessage?: (message: string) => void;
   public setAssistantMessage?: (message: string) => void;
+  public setPromptMessage?: (message: string) => void;
   public setShownMessage?: (role: Role) => void;
   public setChatProcessing?: (processing: boolean) => void;
   public setChatSpeaking?: (speaking: boolean) => void;
@@ -70,6 +69,7 @@ export class Chat {
   public speakJobs: Queue<Speak>;
 
   private currentAssistantMessage: string;
+  private currentPromptMessage: string;
   private currentUserMessage: string;
 
   private lastAwake: number;
@@ -90,6 +90,7 @@ export class Chat {
     this.speakJobs = new Queue<Speak>();
 
     this.currentAssistantMessage = "";
+    this.currentPromptMessage = "";
     this.currentUserMessage = "";
 
     this.messageList = [];
@@ -105,6 +106,7 @@ export class Chat {
     setChatLog: (messageLog: Message[]) => void,
     setUserMessage: (message: string) => void,
     setAssistantMessage: (message: string) => void,
+    setPromptMessage: (message: string) => void,
     setShownMessage: (role: Role) => void,
     setChatProcessing: (processing: boolean) => void,
     setChatSpeaking: (speaking: boolean) => void,
@@ -115,6 +117,7 @@ export class Chat {
     this.setChatLog = setChatLog;
     this.setUserMessage = setUserMessage;
     this.setAssistantMessage = setAssistantMessage;
+    this.setPromptMessage = setPromptMessage;
     this.setShownMessage = setShownMessage;
     this.setChatProcessing = setChatProcessing;
     this.setChatSpeaking = setChatSpeaking;
@@ -130,9 +133,11 @@ export class Chat {
   public setMessageList(messages: Message[]) {
     this.messageList = messages;
     this.currentAssistantMessage = '';
+    this.currentPromptMessage = '';
     this.currentUserMessage = '';
     this.setChatLog!(this.messageList!);
     this.setAssistantMessage!(this.currentAssistantMessage);
+    this.setPromptMessage!(this.currentPromptMessage);
     this.setUserMessage!(this.currentAssistantMessage);
     this.currentStreamIdx++;
   }
@@ -248,6 +253,7 @@ export class Chat {
       this.currentUserMessage += text;
       this.setUserMessage!(this.currentUserMessage);
       this.setAssistantMessage!("");
+      this.setPromptMessage!("");
 
       if (this.currentAssistantMessage !== '') {
         this.messageList!.push({
@@ -276,6 +282,7 @@ export class Chat {
       } else {
         this.currentAssistantMessage += text;
         this.setUserMessage!("");
+        this.setPromptMessage!("");
         this.setAssistantMessage!(this.currentAssistantMessage);
       }
 
@@ -291,6 +298,27 @@ export class Chat {
       this.setChatLog!([
         ...this.messageList!,
         { role: "assistant", content: this.currentAssistantMessage },
+      ]);
+    }
+
+    if (role === 'prompt') {
+      this.currentPromptMessage = text;
+      // this.setUserMessage!("");
+      this.setAssistantMessage!("");
+      this.setPromptMessage!(this.currentPromptMessage);
+
+      if (this.currentUserMessage !== '') {
+        this.messageList!.push({
+          role: "user",
+          content: this.currentUserMessage,
+        });
+
+        this.currentUserMessage = '';
+      }
+
+      this.setChatLog!([
+        ...this.messageList!,
+        { role: "prompt", content: this.currentPromptMessage },
       ]);
     }
 
@@ -361,7 +389,6 @@ export class Chat {
 
   public async makeAndHandleStream(messages: Message[]) {
     try {
-      this.streams.push(await getMomentChatResponseStream());
       this.streams.push(await this.getChatResponseStream(messages));
     } catch(e: any) {
       const errMsg = e.toString();
@@ -535,6 +562,7 @@ export class Chat {
 
   public async getChatResponseStream(messages: Message[]) {
     console.debug('getChatResponseStream', messages);
+    this.bubbleMessage('prompt', "Just a moment, please...");
     const chatbotBackend = config("chatbot_backend");
 
     switch (chatbotBackend) {
@@ -542,16 +570,16 @@ export class Chat {
         return getOpenAiChatResponseStream(messages);
       case 'llamacpp':
         return getLlamaCppChatResponseStream(messages);
-      case 'windowai':
-        return getWindowAiChatResponseStream(messages);
+      // case 'windowai':
+      //   return getWindowAiChatResponseStream(messages);
       case 'ollama':
         return getOllamaChatResponseStream(messages);
       case 'koboldai':
         return getKoboldAiChatResponseStream(messages);
       case 'openrouter':
         return getOpenRouterChatResponseStream(messages);
-      case 'n8n':
-        return getN8nChatResponseStream(messages);
+      case 'alyndra':
+        return getAlyndraChatResponseStream(messages);
     }
 
     return getEchoChatResponseStream(messages);

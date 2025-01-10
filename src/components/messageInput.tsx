@@ -13,6 +13,7 @@ import { whispercpp  } from "@/features/whispercpp/whispercpp";
 import { config } from "@/utils/config";
 import { WaveFile } from "wavefile";
 import { AmicaLifeContext } from "@/features/amicaLife/amicaLifeContext";
+import { Flex, Tag } from 'antd';
 
 export default function MessageInput({
   userMessage,
@@ -160,7 +161,7 @@ export default function MessageInput({
   }
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    onChangeUserMessage(event); 
+    onChangeUserMessage(event);
   
     // Pause amicaLife and update bot's awake status when typing
     if (config("amica_life_enabled") === "true") {
@@ -193,6 +194,10 @@ export default function MessageInput({
     }
   }, [whisperCppOutput]);
 
+  useEffect(() => {
+    bot.bubbleMessage("assistant", config("system_prompt"));
+  }, [bot]);
+
   function clickedSendButton() {
     bot.receiveMessageFromUser(userMessage,false);
     // only if we are using non-VAD mode should we focus on the input
@@ -201,51 +206,68 @@ export default function MessageInput({
     }
     setUserMessage("");
   }
+  function speech(message: string) {
+    bot.receiveMessageFromUser(message, false);
+  }
 
   return (
-    <div className="fixed bottom-2 z-20 w-full">
-      <div className="mx-auto max-w-4xl p-2 backdrop-blur-lg border-0 rounded-lg">
-        <div className="grid grid-flow-col grid-cols-[min-content_1fr_min-content] gap-[8px]">
-          <div className='flex flex-col justify-center items-center'>
-            <IconButton
-              iconName={vad.listening ? "24/PauseAlt" : "24/Microphone"}
-              className="bg-secondary hover:bg-secondary-hover active:bg-secondary-press disabled:bg-secondary-disabled"
-              isProcessing={vad.userSpeaking}
-              disabled={config('stt_backend') === 'none' || vad.loading || Boolean(vad.errored)}
-              onClick={vad.toggle}
-            />
-          </div>
+      <div className="" style={{width: "100%", position: "absolute", bottom: "0"}}>
+        <Flex gap="4px 0" wrap="nowrap" style={{padding:"0 10px 5px"}} >
+          <Tag bordered={false} color="#89d580" className="speech-tag" onClick={()=>speech("what is alyndra?")}>
+            alyndra
+          </Tag>
+          <Tag bordered={false} color="#89d580" className="speech-tag" onClick={()=>speech("what is your contract address?")}>
+            contract address
+          </Tag>
+          <Tag bordered={false} color="#89d580" className="speech-tag" onClick={()=>speech("analyze BTC")}>
+            analyze BTC
+          </Tag>
+          <Tag bordered={false} color="#89d580" className="speech-tag" onClick={()=>speech("analyze ETH")}>
+            analyze ETH
+          </Tag>
+        </Flex>
+        <div className="mx-auto max-w-4xl p-2 backdrop-blur-lg border-0 rounded-lg">
+          <div className="grid grid-flow-col grid-cols-[min-content_1fr_min-content] gap-[8px]">
+            <div className='flex flex-col justify-center items-center'>
+              <IconButton
+                  iconName={vad.listening ? "24/PauseAlt" : "24/Microphone"}
+                  className="bg-secondary hover:bg-secondary-hover active:bg-secondary-press disabled:bg-secondary-disabled"
+                  isProcessing={vad.userSpeaking}
+                  disabled={config('stt_backend') === 'none' || vad.loading || Boolean(vad.errored)}
+                  onClick={vad.toggle}
+              />
+            </div>
 
-          <input
-            type="text"
-            ref={inputRef}
-            placeholder="Write message here..."
-            onChange={handleInputChange}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                if (userMessage === "") {
-                  return false;
-                }
+            <input
+                type="text"
+                ref={inputRef}
+                placeholder="Write message here..."
+                onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    if (userMessage === "") {
+                      return false;
+                    }
 
-                clickedSendButton();
-              }
-            }}
-            disabled={false}
+                    clickedSendButton();
+                  }
+                }}
+                disabled={false}
 
-            className="disabled block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-gray-400 sm:text-sm sm:leading-6"
-            value={userMessage}></input>
+                className="disabled block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-gray-400 sm:text-sm sm:leading-6"
+                value={userMessage}></input>
 
-          <div className='flex flex-col justify-center items-center'>
-            <IconButton
-              iconName="24/Send"
-              className="ml-2 bg-secondary hover:bg-secondary-hover active:bg-secondary-press disabled:bg-secondary-disabled"
-              isProcessing={isChatProcessing || transcriber.isBusy}
-              disabled={isChatProcessing || !userMessage || transcriber.isModelLoading}
-              onClick={clickedSendButton}
-            />
+            <div className='flex flex-col justify-center items-center'>
+              <IconButton
+                  iconName="24/Send"
+                  className="ml-2 bg-secondary hover:bg-secondary-hover active:bg-secondary-press disabled:bg-secondary-disabled"
+                  isProcessing={isChatProcessing || transcriber.isBusy}
+                  // disabled={isChatProcessing || !userMessage || transcriber.isModelLoading}
+                  onClick={clickedSendButton}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }

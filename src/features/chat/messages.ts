@@ -1,4 +1,4 @@
-export type Role = "assistant" | "system" | "user";
+export type Role = "assistant" | "system" | "user" | "prompt";
 
 // ChatGPT API
 export type Message = {

@@ -43,7 +43,7 @@ import { Message, Role } from "@/features/chat/messages";
 import { ChatContext } from "@/features/chat/chatContext";
 import { AlertContext } from "@/features/alert/alertContext";
 
-import { generateNewSessionId, getSessionId } from "@/utils/session";
+import { generateNewSessionId } from "@/utils/session";
 import { config, updateConfig } from '@/utils/config';
 import { isTauri } from '@/utils/isTauri';
 import { langs } from '@/i18n/langs';
@@ -53,6 +53,21 @@ import { ChatModeText } from "@/components/chatModeText";
 
 import { VerticalSwitchBox } from "@/components/switchBox"
 import { TimestampedPrompt } from "@/features/amicaLife/eventHandler";
+
+import TradingViewWidget from '@/components/TradingViewWidget';
+import TickerTapeWidget from '@/components/TickerTapeWidget';
+import Tab from '@/components/Tab';
+import { TradeBox } from "@/components/TradeBox";
+import {
+  GithubOutlined,
+  XOutlined,
+  GlobalOutlined,
+  SunOutlined,
+  UserOutlined
+} from '@ant-design/icons';
+import { Layout, Flex, Space, Avatar } from 'antd';
+
+const { Header, Content} = Layout;
 
 const m_plus_2 = M_PLUS_2({
   variable: "--font-m-plus-2",
@@ -79,6 +94,7 @@ export default function Home() {
   const [chatProcessing, setChatProcessing] = useState(false);
   const [chatLog, setChatLog] = useState<Message[]>([]);
   const [assistantMessage, setAssistantMessage] = useState("");
+  const [promptMessage, setPromptMessage] = useState("");
   const [userMessage, setUserMessage] = useState("");
   const [shownMessage, setShownMessage] = useState<Role>("system");
   const [subconciousLogs, setSubconciousLogs] = useState<TimestampedPrompt[]>([]);
@@ -91,13 +107,15 @@ export default function Home() {
   const [showChatLog, setShowChatLog] = useState(false);
   const [showMainMenu, setShowMainMenu] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
-  const [showChatMode, setShowChatMode] = useState(false);
+  const [showChatMode, setShowChatMode] = useState(true);
   const [showSubconciousText, setShowSubconciousText] = useState(false);
 
   // null indicates havent loaded config yet
   const [muted, setMuted] = useState<boolean|null>(null);
   const [webcamEnabled, setWebcamEnabled] = useState(false);
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     amicaLife.checkSettingOff(!showSettings);
@@ -158,6 +176,7 @@ export default function Home() {
       setChatLog,
       setUserMessage,
       setAssistantMessage,
+      setPromptMessage,
       setShownMessage,
       setChatProcessing,
       setChatSpeaking,
@@ -199,21 +218,86 @@ export default function Home() {
 
       <Introduction open={config("show_introduction") === 'true'} />
 
-      <LoadingProgress />
+
 
       { webcamEnabled && <EmbeddedWebcam setWebcamEnabled={setWebcamEnabled} /> }
       { showDebug && <DebugPane onClickClose={() => setShowDebug(false) }/> }
 
-      <VrmStoreProvider>
-        <VrmViewer chatMode={showChatMode}/>
-        {showSettings && (
-          <Settings
-            onClickClose={() => setShowSettings(false)}
-          />
-        )}
-      </VrmStoreProvider>
-      
-      <MessageInputContainer isChatProcessing={chatProcessing} />
+      <Layout>
+        {isLoading && <LoadingProgress />}
+        <Header style={{ display: 'flex', alignItems: 'center',justifyContent:"space-between", zIndex:"1",background:"#151517" }}>
+          <a href="https://alyndra.mage.fun/" style={{marginRight:"24px"}}>
+            <img className="alyndra-logo" src="/logo.png"/>
+          </a>
+          <Space style={{lineHeight: "normal"}} size="middle">
+            <a href="https://github.com/mage-terminal/alyndra" target="_blank">
+              <GithubOutlined style={{fontSize: '20px', color: '#f4f5f7'}}/>
+            </a>
+            <a href="https://x.com/alyndra_bot" target="_blank">
+              <XOutlined style={{fontSize: '20px', color: '#f4f5f7'}}/>
+            </a>
+            <a href="https://mage.fun/" target="_blank">
+              <GlobalOutlined style={{fontSize: '20px', color: '#f4f5f7'}}/>
+            </a>
+            <SunOutlined style={{fontSize: '20px', color: '#f4f5f7'}}/>
+            <UserOutlined style={{fontSize: '20px', color: '#f4f5f7'}}/>
+          </Space>
+        </Header>
+        <TickerTapeWidget/>
+        <Content style={{padding: '0'}}>
+          <Flex vertical className={"ant-flex_box"}>
+              <Flex gap="8px" vertical={false} className={"ant-flex_box"} style={{padding: "0 8px 8px"}}>
+                <div style={{width: '20%',position: "relative",background:"#151517",borderRadius:"8px"}}>
+                  <TradeBox/>
+                  <div className="mask-div">Coming Soon</div>
+                </div>
+                <div style={{
+                  width: '50%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  gap: '8px'}}>
+                  <TradingViewWidget/>
+                  <Tab/>
+                </div>
+                <div style={{width: '30%',background:"#151517",borderRadius:"8px",zIndex:"1",position:"relative"}}>
+                  <VrmStoreProvider>
+                    <VrmViewer chatMode={showChatMode}
+                               setIsLoading={setIsLoading}/>
+                    {showSettings && (
+                        <Settings
+                            onClickClose={() => setShowSettings(false)}
+                        />
+                    )}
+                  </VrmStoreProvider>
+
+                  {/* Normal chat text */}
+                  {!showSubconciousText && !showChatLog && !showChatMode && (
+                      <>
+                        {shownMessage === 'assistant' && (
+                            <AssistantText message={assistantMessage}/>
+                        )}
+                        {shownMessage === 'prompt' && (
+                            <>
+                              <UserText message={userMessage} marginBottom={"12rem"}/>
+                              <AssistantText message={promptMessage}/>
+                            </>
+                        )}
+                        {shownMessage === 'user' && (
+                            <UserText message={userMessage} marginBottom={"5rem"}/>
+                        )}
+                      </>
+                  )}
+
+                  {/* Chat mode text */}
+                  {showChatMode && <ChatModeText messages={chatLog}/>}
+
+                  <MessageInputContainer isChatProcessing={chatProcessing} />
+                </div>
+              </Flex>
+            </Flex>
+        </Content>
+      </Layout>
 
       {/* main menu */}
       {showMainMenu && <div className="absolute z-10 m-2">
@@ -385,21 +469,6 @@ export default function Home() {
 
 
       {showChatLog && <ChatLog messages={chatLog}/>}
-
-      {/* Normal chat text */}
-      {!showSubconciousText && !showChatLog && !showChatMode && (
-          <>
-            {shownMessage === 'assistant' && (
-                <AssistantText message={assistantMessage}/>
-            )}
-            {shownMessage === 'user' && (
-                <UserText message={userMessage}/>
-            )}
-          </>
-      )}
-
-      {/* Chat mode text */}
-      {showChatMode && <ChatModeText messages={chatLog}/>}
 
       {/* Subconcious stored prompt text */}
       {showSubconciousText && <SubconciousText messages={subconciousLogs}/>}

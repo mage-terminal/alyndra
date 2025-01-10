@@ -18,7 +18,7 @@ export const AssistantText = ({ message }: { message: string }) => {
   });
 
   return (
-    <div className="fixed bottom-0 left-0 mb-20 w-full">
+    <div className="fixed bottom-0 left-0 mb-20 w-full z-10">
       <div className="mx-auto max-w-4xl w-full px-4 md:px-16">
         <div className="backdrop-blur-lg rounded-lg">
           <div className="bg-white/70 rounded-lg backdrop-blur-lg shadow-lg">

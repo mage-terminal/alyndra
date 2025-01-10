@@ -102,7 +102,7 @@ export class Viewer {
     this._renderer.setPixelRatio(window.devicePixelRatio);
 
     // camera
-    this._camera = new THREE.PerspectiveCamera(20.0, width / height, 0.1, 20.0);
+    this._camera = new THREE.PerspectiveCamera(24.0, width / height, 0.1, 24.0);
     this._camera.position.set(0, 1.3, 1.5);
     this._cameraControls?.target.set(0, 1.3, 0);
     this._cameraControls?.update();

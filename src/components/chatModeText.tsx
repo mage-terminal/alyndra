@@ -16,10 +16,17 @@ export const ChatModeText = ({ messages }: { messages: Message[] }) => {
     }, [messages]);
 
     return (
-        <div className="fixed bottom-0 w-full h-[90%] mb-20 flex flex-col justify-end">
-            <div className="w-full h-full overflow-y-auto flex flex-col-reverse">
+        <div style={{
+            position: "relative",
+            marginTop: "12px",
+            // paddingBottom: "90px",
+            overflow: "hidden",
+            width: "100%",
+            height: "88%"
+        }}>
+            <div className="w-full h-full overflow-y-auto flex flex-col-reverse custom-scroll">
 
-                <div className="w-full max-w-full mx-auto px-4 md:px-16 flex flex-col">
+                <div className="w-full max-w-full mx-auto flex flex-col" style={{padding:"0 12px"}}>
                     {messages.map((msg, i) => {
                         return (
                             <div key={i} ref={messages.length - 1 === i ? chatScrollRef : null}>
@@ -58,27 +65,30 @@ function Chat({
     //     });
     // });
 
+    const regex = /https:\/\/([^\s]+)/;
+
     return (
         <div className={clsx(
-            'mx-auto max-w-4xl my-2',
-            role === "assistant" ? "pr-10 sm:pr-20" : "pl-10 sm:pl-20",
+            'mx-auto max-w-4xl chat-mode-text',
+            role === "assistant"||role === "prompt"  ? "pr-10 sm:pr-20" : "pl-10 sm:pl-20",
         )}>
-            <div className="backdrop-blur-lg rounded-lg">
+            <div className="backdrop-blur-lg rounded-lg" style={{backdropFilter:"blur(0px)"}}>
                 <div className="shadow-lg backdrop-blur-lg rounded-lg bg-white/70">
 
                     <div className={clsx(
-                        'pr-1 py-3 bg-rose/90 rounded-t-lg text-white font-bold tracking-wider',
-                        role === "assistant" ? "px-8" : "px-8",
+                        'bg-rose/90 rounded-t-lg text-white font-bold tracking-wider',
+                        role === "assistant"||role === "prompt" ? "assistant-px-4" : "user-px-4",
                     )}>
                         <span className={clsx(
-                            "p-4 rounded-lg rounded-tl-none rounded-tr-none shadow-sm",
-                            role === "assistant" ? "bg-pink-600/80" : "bg-cyan-600/80",
+                            "rounded-lg rounded-tl-none rounded-tr-none shadow-sm",
+                            role === "assistant"||role === "prompt" ? "bg-assistant" : "bg-user",
                         )}>
                             {role === "assistant" && config('name').toUpperCase()}
+                            {role === "prompt" && config('name').toUpperCase()}
                             {role === "user" && t("YOU")}
                         </span>
 
-                        {role === "assistant" && (
+                        {/*{role === "assistant" && (
                             <IconButton
                                 iconName="24/FrameSize"
                                 className="bg-transparent hover:bg-transparent active:bg-transparent disabled:bg-transparent float-right"
@@ -86,21 +96,40 @@ function Chat({
                                 onClick={() => setUnlimited(!unlimited)}
                             />
 
-                        )}
+                        )}*/}
                     </div>
                     {role === "assistant" && (
                         <div className={clsx(
-                            "px-8 py-4 overflow-y-auto",
+                            "chat-text overflow-y-auto custom-scroll",
                             unlimited ? 'max-h-32' : 'max-h-[calc(75vh)]',
                         )}>
                             <div className="min-h-8 max-h-full typography-16 font-bold text-gray-600">
-                                {message.replace(/\[([a-zA-Z]*?)\]/g, "")}
+                                {
+                                    message.replace(/\[([a-zA-Z]*?)\]/g, "")
+                                    .replace(/https:\/\/[^\s]+/g, "")
+                                }
+                                {
+                                    message.match(regex)?.[0] && <img src={message.match(regex)?.[0]+"jpeg"} alt=""/>
+                                }
+
+                                <div ref={scrollRef} />
+                            </div>
+                        </div>
+                    )}
+                    {role === "prompt" && (
+                        <div className={clsx(
+                            "chat-text overflow-y-auto",
+                            unlimited ? 'max-h-32' : 'max-h-[calc(75vh)]',
+                        )}>
+                            <div className="min-h-8 max-h-full typography-16 font-bold text-gray-600">
+                                {/*{message.replace(/\[([a-zA-Z]*?)\]/g, "")}*/}
+                                <div className="prompt-loader"></div>
                                 <div ref={scrollRef} />
                             </div>
                         </div>
                     )}
                     {role === "user" && (
-                        <div className="px-8 py-4 max-h-32 overflow-y-auto">
+                        <div className="chat-text max-h-32 overflow-y-auto">
                             <div className="min-h-8 max-h-full typography-16 font-bold text-gray-600">
                                 {message.replace(/\[([a-zA-Z]*?)\]/g, "")}
                                 <div ref={scrollRef} />
